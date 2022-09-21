@@ -73,7 +73,6 @@ public class Main {
             SinhVien sinhvien = new SinhVien();
             sinhvien.nhap();
             saveDatabase(sinhvien);
-            list.add(sinhvien);
         }
         System.out.println("Da them xong " + n + " sinh vien");
     }
@@ -81,29 +80,13 @@ public class Main {
     private static void edit() {
         System.out.println("Nhap ma sinh vien ban muon sua");
         String msv = sc.nextLine();
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getMsv().equals(msv)) {
-                list.get(i).edit();
-                break;
-            }
-        }
+        editInDatabase(msv);
     }
 
     private static void searchById() {
         System.out.println("Nhap ma sinh vien muon tim kiem");
         String msv = sc.nextLine();
-//        boolean check = true;
-//        for (int i = 0; i < list.size(); i++) {
-//            if (list.get(i).getMsv().equals(msv)) {
-//                list.get(i).display();
-//                check = false;
-//                break;
-//            }
-//        }
-//        if (check) {
-//            System.out.println("Khong ton tai tinh vien can tim");
-//        }
-       SinhVien sinhvien = findInDatabase(msv);
+        SinhVien sinhvien = findInDatabase(msv);
        if(sinhvien != null){
            System.out.println(sinhvien.toString());
        }
@@ -115,17 +98,7 @@ public class Main {
     private static void deleteById() {
         System.out.println("Nhap ma sinh vien muon xoa");
         String msv = sc.nextLine();
-        boolean check = true;
-        for (int i = 0; i < list.size(); i++) {
-            if (list.get(i).getMsv().equals(msv)) {
-                list.remove(i);
-                check = false;
-                break;
-            }
-        }
-        if (check) {
-            System.out.println("Khong ton tai sinh vien co ma nay");
-        }
+        deleteRecordInDataBase(msv);
     }
 
     private static void sortByGpa() {
@@ -299,7 +272,6 @@ public class Main {
                     connection.close();
                 } catch (SQLException ex) {
                     System.out.println(ex.getMessage());
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             if (statement != null) {
@@ -307,7 +279,6 @@ public class Main {
                     statement.close();
                 } catch (SQLException ex) {
                     System.out.println(ex.getMessage());
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -364,6 +335,46 @@ public class Main {
          return null;
     }
     public static void editInDatabase(String msv){
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            String sql = "UPDATE sinhvien SET ten = ?, lop =?, diachi =?, gpa = ? WHERE msv = ?";
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            String ten = sc.nextLine();
+            String lop = sc.nextLine();
+            String diachi = sc.nextLine();
+            float gpa = Float.parseFloat(sc.nextLine().trim());
+            
+            statement.setString(1, ten);
+            statement.setString(2, lop);
+            statement.setString(3, diachi);
+            statement.setFloat(4, gpa);
+            statement.setString(5, msv);
+
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println("Khong ton tai sinh vien co ma can sua");
+            ex.printStackTrace();
+        }
+    
         
     }
+    
+    public static void deleteRecordInDataBase(String msv){
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            String sql = "DELETE FROM sinhvien WHERE msv = ?";
+            connection = getConnection();
+            statement = connection.prepareStatement(sql);
+            statement.setString(1, msv);
+            
+            statement.executeUpdate();
+        } catch (SQLException ex) {
+            System.out.println("Khong ton tai sinh vien co ma can xoa");
+            ex.printStackTrace();
+        }
+    }
+    
 }
